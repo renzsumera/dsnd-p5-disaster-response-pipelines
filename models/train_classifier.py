@@ -19,6 +19,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
 def load_data(database_filepath):
+    ''' Takes the database file path to load data. Runs a query to extract the
+    values for the X, Y & category names and returns them.'''
 
     # load data from database
     engine = create_engine('sqlite:///{}'.format(database_filepath))
@@ -28,6 +30,8 @@ def load_data(database_filepath):
 
     # run a query
     df = pd.read_sql('SELECT * FROM disaster', conn)
+
+    # extract values for X, Y and category names
     X = df['message']
     Y = df.iloc[:,4:]
     category_names = list(Y)
@@ -35,6 +39,9 @@ def load_data(database_filepath):
     return X, Y, category_names
 
 def tokenize(text):
+    '''Uses NLTK to case normalize, lemmatize, and tokenize text. This function
+    is used in the machine learning pipeline to vectorize and apply TF-IDF to
+    the text.'''
 
     # tokenize text
     tokens = word_tokenize(text)
@@ -53,6 +60,9 @@ def tokenize(text):
     return clean_tokens
 
 def build_model():
+    '''Builds the pipeline that processes text and then performs multi-output
+    classification on the 36 categories in the dataset. GridSearchCV is used to
+    find the best parameters for the model.'''
 
     # build pipeline
     pipeline = Pipeline([
@@ -67,6 +77,9 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    '''Uses the model to predict the classification of the 36 categories.
+    Reports the F1 score, precision, and recall for each output category of the
+    dataset.'''
 
     # predict on test data
     Y_pred = model.predict(X_test)
@@ -76,6 +89,8 @@ def evaluate_model(model, X_test, Y_test, category_names):
         print(category_names[i], '\n', classification_report(Y_test.iloc[:,i], Y_pred[:,i]))
 
 def save_model(model, model_filepath):
+    '''Stores the classifier into a pickle file to the specified model file
+    path.'''
 
     # export model as pickle file
     pickle.dump(model, open(model_filepath, 'wb'))
