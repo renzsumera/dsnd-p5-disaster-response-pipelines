@@ -122,6 +122,9 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# DS_Store
+.DS_Store
 © 2018 GitHub, Inc.
 Terms
 Privacy
