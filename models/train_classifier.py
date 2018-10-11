@@ -10,10 +10,10 @@ import pickle
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -70,10 +70,18 @@ def build_model():
                 ('vect', CountVectorizer(tokenizer=tokenize)),
                 ('tfidf', TfidfTransformer())
             ])),
-            ('clf', MultiOutputClassifier(RandomForestClassifier()))
+            ('clf', MultiOutputClassifier(AdaBoostClassifier()))
         ])
 
-    return pipeline
+    # use grid search to find better parameters
+    parameters = {
+         'text_pipeline__tfidf__use_idf': (True, False),
+         'clf__estimator__n_estimators': [10, 50, 100],
+         'clf__estimator__learning_rate': [0.1, 1, 5],
+         }
+
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -86,7 +94,12 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
     # report the f1 score, precision, and recall for each category
     for i in range(36):
-        print(category_names[i], '\n', classification_report(Y_test.iloc[:,i], Y_pred[:,i]))
+        category = category_names[i]
+        f1 = f1_score(Y_test.iloc[:,i], Y_pred[:,i])
+        precision = precision_score(Y_test.iloc[:,i], Y_pred[:,i])
+        recall = recall_score(Y_test.iloc[:,i], Y_pred[:,i])
+        print(category)
+        print("\tF1 Score: %.4f\tPrecision: %.4f\t Recall: %.4f\n" % (f1, precision, recall))
 
 def save_model(model, model_filepath):
     '''Stores the classifier into a pickle file to the specified model file

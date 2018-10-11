@@ -41,6 +41,9 @@ def clean_data(df):
         # convert column from string to numeric
         categories[column] = categories[column].astype(int)
 
+    # change the value of 2 in 'related' column to 0
+    categories['related'].replace(to_replace=2, value=0, inplace=True)
+
     # drop the original categories column from `df`
     df.drop(labels='categories', axis=1, inplace=True)
 
