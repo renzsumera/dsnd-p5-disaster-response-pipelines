@@ -44,14 +44,15 @@ def index():
     genre_names = list(genre_counts.index)
 
     # create dictionary for mapping of the 'related' column
-    related_dict = {0: 'not_related', 1: 'related', 2: 'cannot be determined'}
+    related_dict = {0: 'not_related', 1: 'related'}
 
     # extract 'related' column and set x & y values
     related = df['related'].map(related_dict)
     related_counts = related.value_counts()
     related_names = list(related_counts.index)
 
-    # extract the the rest of the categories excluding 'related' and set x and y values
+    # extract the the rest of the categories excluding 'related' and set x &
+    # y values
     categories = df.iloc[:,4:]
     categories_mean = categories.mean().sort_values(ascending=False)[1:11]
     categories_names = list(categories_mean.index)
